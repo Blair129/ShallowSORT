@@ -37,7 +37,7 @@ class DeepSort(object):
 
         # update tracker
         self.tracker.predict()  #用卡尔曼滤波 对均值和方差进行预测
-        self.tracker.update(detections)
+        self.tracker.update(detections) #1.match 1.1 将track分为confirmed和
 
         # output bbox identities
         outputs = []
