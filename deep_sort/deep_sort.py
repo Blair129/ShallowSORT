@@ -15,28 +15,28 @@ class DeepSort(object):
         self.min_confidence = 0.3   #检测框的最小置信度
         self.nms_max_overlap = 1.0  #利用nms去除重叠率较大的bbox，阈值为1（即不使用nms）
 
-        self.extractor = Extractor(model_path, use_cuda, use_original_model)
+        self.extractor = Extractor(model_path, use_cuda, use_original_model)    #特征提取
 
-        max_cosine_distance = max_dist
-        nn_budget = 100
-        metric = NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
+        max_cosine_distance = max_dist  #余弦相似度 0.2 Q
+        nn_budget = 100 #Q
+        metric = NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget) #初始化metric（partial_fit和distance）Q
         self.tracker = Tracker(metric)
 
     def update(self, bbox_xywh, confidences, ori_img):
         self.height, self.width = ori_img.shape[:2]
         # generate detections
-        features = self._get_features(bbox_xywh, ori_img)
-        bbox_tlwh = self._xywh_to_tlwh(bbox_xywh)
-        detections = [Detection(bbox_tlwh[i], conf, features[i]) for i, conf in enumerate(confidences) if conf > self.min_confidence]
+        features = self._get_features(bbox_xywh, ori_img)   #特征提取
+        bbox_tlwh = self._xywh_to_tlwh(bbox_xywh)   
+        detections = [Detection(bbox_tlwh[i], conf, features[i]) for i, conf in enumerate(confidences) if conf > self.min_confidence]   #检测实例
 
-        # run on non-maximum supression
+        # run on non-maximum supression 未使用
         boxes = np.array([d.tlwh for d in detections])
         scores = np.array([d.confidence for d in detections])
         indices = non_max_suppression(boxes, self.nms_max_overlap, scores)
         detections = [detections[i] for i in indices]
 
         # update tracker
-        self.tracker.predict()
+        self.tracker.predict()  #用卡尔曼滤波 对均值和方差进行预测
         self.tracker.update(detections)
 
         # output bbox identities
