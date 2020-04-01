@@ -15,7 +15,7 @@ class DeepSort(object):
         self.min_confidence = 0.3   #检测框的最小置信度
         self.nms_max_overlap = 1.0  #利用nms去除重叠率较大的bbox，阈值为1（即不使用nms）
 
-        self.extractor = Extractor(model_path, use_cuda, use_original_model)    #特征提取
+        self.extractor = Extractor(model_path, use_cuda, use_original_model)    #特征提取器
 
         max_cosine_distance = max_dist  #余弦相似度 0.2 Q
         nn_budget = 100 #Q
@@ -37,7 +37,7 @@ class DeepSort(object):
 
         # update tracker
         self.tracker.predict()  #用卡尔曼滤波 对均值和方差进行预测
-        self.tracker.update(detections) #1.match 1.1 将track分为confirmed和
+        self.tracker.update(detections) #1.match 1.1 将track分为confirmed和unconfirmed 1.2级联匹配
 
         # output bbox identities
         outputs = []
