@@ -11,7 +11,14 @@ class Extractor(object):
     def __init__(self, model_path, use_cuda=True, use_original_model=False):
         self.net = OriginalNet(reid=True) if use_original_model else Net(reid=True)
         self.device = "cuda" if torch.cuda.is_available() and use_cuda else "cpu"
-        state_dict = torch.load(model_path, map_location=lambda storage, loc: storage)['net_dict']
+        from functools import partial
+        import pickle
+        pickle.load = partial(pickle.load, encoding="latin1")
+        pickle.Unpickler = partial(pickle.Unpickler, encoding="latin1")
+        #model = torch.load(model_file, map_location=lambda storage, loc: storage, pickle_module=pickle)
+        
+        
+        state_dict = torch.load(model_path, map_location=lambda storage, loc: storage，pickle_module=pickle)['net_dict']
         self.net.load_state_dict(state_dict)
         print("Loading weights from {}... Done!".format(model_path))
         self.net.to(self.device)
